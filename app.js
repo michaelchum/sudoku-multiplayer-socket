@@ -71,9 +71,11 @@ io.on('connection', function (socket) {
     opponent.getSocket().emit('oprogress', { 'message' : data });
   });
   socket.on('win', function (data) {
-    var player = findPlayer(socket.id);
+    var player = findPlayerByName(data);
     var opponent = findPlayerByName(player.getOpponent());
-    console.log("Progress received from " + player.getName() + " : " + data + " sending it to " + opponent.getName());
+    console.log(player + " lost against " + opponent);
+    player.incRating();
+    opponent.decRating();
     opponent.getSocket().emit('lose', { 'message' : data });
   });
   socket.on('disconnect', function (data) {
