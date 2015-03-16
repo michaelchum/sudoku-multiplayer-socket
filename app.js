@@ -80,10 +80,10 @@ io.on('connection', function (socket) {
     console.log(player.getName() + " new score: " + player.getRating());
     console.log(opponent.getName() + " new score: " + opponent.getRating());
 
+    opponent.getSocket().emit('lost', { 'message' : data });
+    
     players.splice(players.indexOf(player), 1);
     players.splice(players.indexOf(opponent), 1);
-
-    opponent.getSocket().emit('lost', { 'message' : data });
   });
   socket.on('disconnect', function (data) {
     var player = findPlayerBySocketId(socket.id);
