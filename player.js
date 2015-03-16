@@ -1,69 +1,97 @@
 var Player = function(id, name, socket) {
-    var name = name,
-        id = id,
-	socket = socket,
-        opponent = undefined,
-	opponentId = undefined,
-        grid = undefined,
-        progress = 0;
+  var name = name,
+  id = id,
+  socket = socket,
+  opponent = undefined,
+  opponentId = undefined,
+  grid = undefined,
+  progress = 0
+  rating = 100;
 
-    var getName = function() {
-        return name;
-    };
+  var getName = function() {
+    return name;
+  };
 
-    var getId = function () {
-        return id;
-    };
+  var getId = function() {
+    return id;
+  };
 
-    var getOpponent = function() {
-        return opponent;
-    };
+  var setId = function(newId) {
+    id = newId;
+  };
 
-    var getOpponentId = function() {
-	return opponentId;
-    };
+  var getOpponent = function() {
+    return opponent;
+  };
 
-    var setOpponent = function(newOpponent) {
-        opponent = newOpponent;
-    };
+  var getOpponentId = function() {
+    return opponentId;
+  };
 
-    var setOpponentId = function(newOpponentId) {
-	opponentId = newOpponentId;
-    };
+  var setOpponent = function(newOpponent) {
+    opponent = newOpponent;
+  };
 
-    var setGrid = function(newGrid) {
-        grid = newGrid;
-    };
+  var setOpponentId = function(newOpponentId) {
+  opponentId = newOpponentId;
+  };
 
-    var getGrid = function() {
-        return grid;
-    };
+  var setGrid = function(newGrid) {
+    grid = newGrid;
+  };
 
-    var setProgress = function(newProgress) {
-        progress = newProgress;
-    };
+  var getGrid = function() {
+    return grid;
+  };
 
-    var getProgress = function() {
-        return progress;
-    };
+  var setProgress = function(newProgress) {
+    progress = newProgress;
+  };
 
-    var getSocket = function() {
-	return socket;
-    };
+  var getProgress = function() {
+    return progress;
+  };
 
-    return {
-        getName : getName,
-        getOpponent : getOpponent,
-        setOpponent : setOpponent,
-        setGrid : setGrid,
-        getGrid : getGrid,
-        setProgress : setProgress,
-        getProgress : getProgress,
-        getId : getId,
-	getSocket : getSocket,
-	getOpponentId : getOpponentId,
-	setOpponentId : setOpponentId
-    }
+  var getSocket = function() {
+    return socket;
+  };
+
+  var setSocket = function(newSocket) {
+    socket = newSocket;
+  };
+
+  var getRating = function() {
+    return rating;
+  };
+
+  var incRating = function() {
+    rating += 20;
+    return rating;
+  };
+
+  var decRating = function() {
+    rating -= 20;
+    return rating;
+  };
+
+  return {
+    getName : getName,
+    getOpponent : getOpponent,
+    setOpponent : setOpponent,
+    setGrid : setGrid,
+    getGrid : getGrid,
+    setProgress : setProgress,
+    getProgress : getProgress,
+    getId : getId,
+    setId : setId,
+    getSocket : getSocket,
+    setSocket : setSocket,
+    getOpponentId : getOpponentId,
+    setOpponentId : setOpponentId,
+    getRating : getRating,
+    incRating : incRating,
+    decRating : decRating
+  }
 };
 
 module.exports = Player;

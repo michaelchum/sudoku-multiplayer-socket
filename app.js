@@ -4,7 +4,9 @@ var io = require('socket.io')(server);
 var Player = require('./player.js');
 
 var players = [];
+var db = {};
 
+console.log("Socket server starting...");
 server.listen(4000);
 
 app.get('/', function (req, res) {
@@ -35,33 +37,55 @@ io.on('connection', function (socket) {
       }
     }
     console.log("Username received from " + socket.id + " " + data);
-    players.push(new Player(socket.id, data, socket));
-    printPlayers();
+    var player;
+    if (db[data] == undefined) {
+      console.log("Player not found in db, creating new player...");
+      player = new Player(socket.id, data, socket);
+    } else {
+      console.log("Player found in db, resuming player...");
+      player = db[data];
+      player.setId(socket.id);
+      player.setSocket(socket);
+    }
+    players.push(player);
+    printPlayersOnline();
     latestSocket = socket;
     // Check if last player is matched
     if (players.length > 1 && players[players.length-2].getOpponent() == undefined) {
-      players[players.length-2].setOpponent(players[players.length-1].getName());
-      players[players.length-1].setOpponent(players[players.length-2].getName());
-      console.log("Match found! " + players[players.length-1].getName() + " & " + players[players.length-2].getName());
-      players[players.length-1].getSocket().emit('start', { message : players[players.length-1].getOpponent() + " - No ranking" });
-      players[players.length-2].getSocket().emit('start', { message : players[players.length-2].getOpponent() + " - No ranking" });
+      var playerOne = players[players.length-2];
+      var playerTwo = players[players.length-1];
+      playerOne.setOpponent(players[players.length-1].getName());
+      playerTwo.setOpponent(playerOne.getName());
+      console.log("Match found! " + playerTwo.getName() + " & " + playerOne.getName());
+      playerTwo.getSocket().emit('start', { message : playerTwo.getOpponent() + " - " + playerTwo.getRating.toString()});
+      playerOne.getSocket().emit('start', { message : playerOne.getOpponent() + " - " + playerOne.getRating.toString()});
     } else {
-      //waitForAI();
+      waitForAI();
     }
   });
   socket.on('progress', function (data) {
-    if (updatedOpAIName) return;
     var player = findPlayer(socket.id);
     var opponent = findPlayerByName(player.getOpponent());
+    if (opponent == undefined) return;
     console.log("Progress received from " + player.getName() + " : " + data + " sending it to " + opponent.getName());
     opponent.getSocket().emit('oprogress', { 'message' : data });
   });
+  socket.on('win', function (data) {
+    var player = findPlayer(socket.id);
+    var opponent = findPlayerByName(player.getOpponent());
+    console.log("Progress received from " + player.getName() + " : " + data + " sending it to " + opponent.getName());
+    opponent.getSocket().emit('lose', { 'message' : data });
+  });
   socket.on('disconnect', function (data) {
-    console.log("Cient disconnected " + socket.id);
+    var player = findPlayerBySocketId(socket.id);
+    players.splice(players.indexOf(player), 1);
+    console.log("Cient disconnected " + player.getName() + " " + socket.id);
   });
 });
 
-function printPlayers() {
+// Utilities
+
+function printPlayersOnline() {
   for (var i = 0; i < players.length; i++) {
     var player = players[i];
     console.log(i + " "  + player.getId());
@@ -77,6 +101,7 @@ function findPlayer(id) {
       player = players[i];
     }
   }
+  if (player == undefined) console.error("findPlayer() not found");
   return player;
 }
 
@@ -87,17 +112,29 @@ function findPlayerByName(name) {
       player = players[i];
     }
   }
+  if (player == undefined) console.error("findPlayerByName() not found");
   return player;
 }
 
+function findPlayerBySocketId(socketId) {
+  var player;
+  for (var i = 0; i < players.length; i++) {
+    if (players[i].getId() == socketId) {
+      player = players[i];
+    }
+  }
+  if (player == undefined) console.error("findPlayerBySocketId() not found");
+  return player;
+}
+
+// AI functions
+
 var oprogress = 0;
 var latestSocket = undefined;
-var updatedOpAIName = false;
 
 function sendAIProgress() {
   if (!updatedOpAIName) {
     latestSocket.emit('start', { message : "Evil AI - Rank 12" });
-    updatedOpAIName = true;
   } else {
     oprogress++;
     latestSocket.emit('oprogress', { message : oprogress });
@@ -112,7 +149,7 @@ function waitForAI() {
 
 function shouldTriggerAI() {
   console.log("Checking if AI is necessary...");
-  if (players[players.length-2].getOpponent() == undefined) {
+  if (players.length == 1 || players[players.length-1].getOpponent() == undefined) {
     console.log("Triggering AI...");
     setInterval(sendAIProgress, 1000);
   }
