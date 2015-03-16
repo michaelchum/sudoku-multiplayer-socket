@@ -77,12 +77,20 @@ io.on('connection', function (socket) {
     console.log(player.getName() + " lost against " + opponent.getName());
     player.incRating();
     opponent.decRating();
-    opponent.getSocket().emit('lose', { 'message' : data });
+    console.log(player.getName() + " new score: " + player.getRating());
+    console.log(opponent.getName() + " new score: " + opponent.getRating());
+
+    players.splice(players.indexOf(player), 1);
+    players.splice(players.indexOf(opponent), 1);
+
+    opponent.getSocket().emit('lost', { 'message' : data });
   });
   socket.on('disconnect', function (data) {
     var player = findPlayerBySocketId(socket.id);
-    players.splice(players.indexOf(player), 1);
-    console.log("Cient disconnected " + player.getName() + " " + socket.id);
+    if (player) {
+      players.splice(players.indexOf(player), 1);
+      console.log("Cient disconnected " + player.getName() + " " + socket.id);
+    }
   });
 });
 
