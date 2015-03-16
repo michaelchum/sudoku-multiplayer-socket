@@ -71,9 +71,10 @@ io.on('connection', function (socket) {
     opponent.getSocket().emit('oprogress', { 'message' : data });
   });
   socket.on('win', function (data) {
+    console.log(data + " won");
     var player = findPlayerByName(data);
     var opponent = findPlayerByName(player.getOpponent());
-    console.log(player + " lost against " + opponent);
+    console.log(player.getName() + " lost against " + opponent.getName());
     player.incRating();
     opponent.decRating();
     opponent.getSocket().emit('lose', { 'message' : data });
@@ -133,10 +134,12 @@ function findPlayerBySocketId(socketId) {
 
 var oprogress = 0;
 var latestSocket = undefined;
+var updatedOpAIName = false;
 
 function sendAIProgress() {
   if (!updatedOpAIName) {
     latestSocket.emit('start', { message : "Evil AI - Rank 12" });
+    updatedOpAIName = true;
   } else {
     oprogress++;
     latestSocket.emit('oprogress', { message : oprogress });
